@@ -1,7 +1,7 @@
 import { connectToDatabase } from '@/app/config/db';
 import User from '@/models/user.model';
 import type { NextAuthOptions } from 'next-auth';
-import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google';
+import GoogleProvider from 'next-auth/providers/google';
 export const options: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -12,7 +12,9 @@ export const options: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (
-        user?.email?.endsWith('@redergo.com') &&
+        (user?.email?.endsWith('@redergo.com') ||
+          user?.email?.endsWith('@avrean.com') ||
+          user?.email?.endsWith('@avrean.net')) &&
         profile?.email_verified === true
       ) {
         await connectToDatabase();
@@ -29,18 +31,13 @@ export const options: NextAuthOptions = {
         }
 
         // Return user information to be stored in the session
-        return {
-          email: user?.email,
-          fullName: user?.name,
-          picture: user?.image,
-          role: userfromMongo.role, // Assuming userfromMongo has a 'role' property
-        };
+        return true;
       } else {
         return false;
       }
     },
     // Ref: https://authjs.dev/guides/basics/role-based-access-control#persisting-the-role
-    async jwt({ token }) {
+    async jwt({ token }: { token: any }) {
       await connectToDatabase();
       const user = await User.findOne({ email: token?.email });
       if (user) token.role = user.role; // user.role was set in the signIn callback

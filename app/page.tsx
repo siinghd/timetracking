@@ -1,9 +1,10 @@
 import { getServerSession } from 'next-auth';
 import Image from 'next/image';
+import { options } from './api/auth/[...nextauth]/options';
 
 export default async function Home() {
-  const session: any = await getServerSession();
-  console.log('Client-side session: ', session);
+  const session: any = await getServerSession(options);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
