@@ -1,9 +1,9 @@
 import { connectToDatabase } from '@/app/config/db';
 import Project from '@/models/project.model';
-import { NextApiRequest } from 'next';
 import { getServerSession } from 'next-auth';
 import { options } from '../../auth/[...nextauth]/options';
 import { NextRequest } from 'next/server';
+import User from '@/models/user.model';
 
 export async function PUT(
   request: NextRequest,
@@ -20,11 +20,33 @@ export async function PUT(
     }
     const body = await request.json();
 
-    const project = await Project.findByIdAndUpdate(params.id, body, {
+    // Fetch the current state of the project
+    const currentProject = await Project.findById(params.id);
+
+    // Update the project
+    const updatedProject = await Project.findByIdAndUpdate(params.id, body, {
       new: true,
     });
 
-    return new Response(JSON.stringify({ data: project }), {
+    // Identify users who have been removed from the project
+    const removedUsers = currentProject.assignedUsers.filter(
+      (userId: string) => !updatedProject.assignedUsers.includes(userId)
+    );
+
+    // Update the assignedProjects array for each removed user
+    await Promise.all(
+      removedUsers.map(async (userId: string) => {
+        await User.findByIdAndUpdate(
+          userId,
+          {
+            $pull: { assignedProjects: updatedProject._id },
+          },
+          { new: true }
+        );
+      })
+    );
+
+    return new Response(JSON.stringify({ project: updatedProject }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200, // OK
     });
@@ -58,7 +80,7 @@ export async function DELETE(
     }
     await Project.findByIdAndDelete(params.id);
 
-    return new Response(JSON.stringify({ data: {} }), {
+    return new Response(JSON.stringify({ document: {} }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200, // OK
     });
