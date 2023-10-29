@@ -57,7 +57,7 @@ jobs:
     if: (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') && success()
     defaults:
       run:
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY_PIPELINE }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
