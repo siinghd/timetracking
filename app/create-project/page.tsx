@@ -4,6 +4,7 @@ import User from '@/models/user.model';
 import CreateProjectComponent from './CreateProjectComponent';
 import { toPlainObject } from '../utils/methods';
 import Project, { ProjectDocument } from '@/models/project.model';
+export const dynamic = 'force-dynamic';
 
 const CreateProject = async ({
   params,

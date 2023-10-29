@@ -6,6 +6,8 @@ import User from '@/models/user.model';
 import Project from '@/models/project.model';
 import ProjectDataRow from './components/ProjectDataRow';
 
+export const revalidate = 60;
+
 const ProjectName = ({ projectName }: { projectName: string }) => (
   <h3 className="text-2xl font-semibold">{projectName}</h3>
 );

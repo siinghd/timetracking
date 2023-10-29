@@ -140,7 +140,7 @@ const getTimeRangeData = async (
   startDate: any,
   isAdmin: any
 ) => {
-  let pipeline;
+  let pipeline: any[];
   if (isAdmin) {
     pipeline = [
       matchProject(projectId),
