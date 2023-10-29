@@ -23,7 +23,7 @@ on:
     branches:
       - '*'
     paths:
-      - .
+      - './*'
   workflow_dispatch: {}
 jobs:
   build:
