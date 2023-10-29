@@ -29,8 +29,10 @@ const projectSchema = new Schema<IProject>(
   },
   { timestamps: true }
 );
-
+projectSchema.index({ name: 1 });
+projectSchema.index({ createdAt: -1 });
 const Project =
-  mongoose.models.Project || mongoose.model<IProject>('Project', projectSchema);
+  mongoose.models?.Project ||
+  mongoose.model<IProject>('Project', projectSchema);
 
 export default Project;

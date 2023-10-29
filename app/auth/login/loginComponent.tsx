@@ -4,7 +4,7 @@ import { signIn, useSession } from 'next-auth/react';
 
 const LoginComponent = () => {
   const { data: session } = useSession();
-  console.log(session);
+
   const [error, setError] = useState(null);
 
   const handleLogin = async () => {

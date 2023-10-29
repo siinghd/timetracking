@@ -24,10 +24,6 @@ const timeEntrySchema = new Schema<ITimeEntry>(
       ref: 'Project',
       required: true,
     },
-    date: {
-      type: Date,
-      required: true,
-    },
     hoursSpent: {
       type: Number,
       required: true,
@@ -35,9 +31,14 @@ const timeEntrySchema = new Schema<ITimeEntry>(
   },
   { timestamps: true }
 );
+timeEntrySchema.index({ user: 1, project: 1 });
+timeEntrySchema.index({ user: 1 });
+timeEntrySchema.index({ project: 1 });
+timeEntrySchema.index({ createdAt: -1 });
+timeEntrySchema.index({ hoursSpent: -1 });
 
 const TimeEntry =
-  mongoose.models.TimeEntry ||
+  mongoose.models?.TimeEntry ||
   mongoose.model<ITimeEntry>('TimeEntry', timeEntrySchema);
 
 export default TimeEntry;

@@ -24,7 +24,7 @@ export function Providers(props: { children: React.ReactNode }) {
       <ReactQueryStreamedHydration>
         <SessionProvider>{props.children}</SessionProvider>
       </ReactQueryStreamedHydration>
-      {<ReactQueryDevtools initialIsOpen={false} />}
+      {/*  {<ReactQueryDevtools initialIsOpen={false} />} */}
     </QueryClientProvider>
   );
 }
