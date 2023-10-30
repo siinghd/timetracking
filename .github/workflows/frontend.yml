@@ -49,7 +49,7 @@ jobs:
       - run: npm install -g pnpm
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm run lint
-      # - run: pnpm run build
+      - run: pnpm run build
 
   deploy:
     needs: [build]
