@@ -15,7 +15,7 @@ export async function PUT(
     if (session?.user.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'User not admin' }), {
         headers: { 'Content-Type': 'application/json' },
-        status: 400, // Internal Server Error
+        status: 403, // Forbidden
       });
     }
     const body = await request.json();
@@ -46,17 +46,40 @@ export async function PUT(
       })
     );
 
+    // Identify users who have been added to the project
+    const addedUsers = updatedProject.assignedUsers.filter(
+      (userId: string) => !currentProject.assignedUsers.includes(userId)
+    );
+
+    // Update the assignedProjects array for each added user
+    await Promise.all(
+      addedUsers.map(async (userId: string) => {
+        await User.findByIdAndUpdate(
+          userId,
+          {
+            $push: { assignedProjects: updatedProject._id },
+          },
+          { new: true }
+        );
+      })
+    );
+
     return new Response(JSON.stringify({ project: updatedProject }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200, // OK
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to update project' }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500, // Internal Server Error
-    });
+    console.error(error); // Log the actual error to the server logs
+    return new Response(
+      JSON.stringify({ error: `Failed to update project: ${error.message}` }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500, // Internal Server Error
+      }
+    );
   }
 }
+
 
 export async function DELETE(
   request: NextRequest, // Assuming NextApiRequest is imported from 'next'
