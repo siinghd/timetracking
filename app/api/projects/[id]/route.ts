@@ -68,7 +68,7 @@ export async function PUT(
       headers: { 'Content-Type': 'application/json' },
       status: 200, // OK
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error); // Log the actual error to the server logs
     return new Response(
       JSON.stringify({ error: `Failed to update project: ${error.message}` }),
@@ -79,7 +79,6 @@ export async function PUT(
     );
   }
 }
-
 
 export async function DELETE(
   request: NextRequest, // Assuming NextApiRequest is imported from 'next'
