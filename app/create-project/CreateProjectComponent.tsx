@@ -3,6 +3,7 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { fetchData } from '../utils/methods';
 import { ProjectDocument } from '@/models/project.model';
+import { revalidatePath } from 'next/cache';
 
 interface User {
   _id: string;
@@ -45,6 +46,8 @@ const CreateProjectComponent: React.FC<CreateProjectProps> = ({
           ? 'Project updated successfully!'
           : 'Project created successfully!'
       );
+      revalidatePath('/manage-projects');
+      revalidatePath('/');
     } else {
       alert('Error handling project!');
     }

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { fetchData } from '../utils/methods';
+import { revalidatePath } from 'next/cache';
 
 interface TimeEntryComponentProps {
   projects: any;
@@ -28,6 +29,7 @@ const TimeEntryComponent: React.FC<TimeEntryComponentProps> = ({
     const response = await fetchData('/api/timeentry', 'post', entries);
     if (response.status === 200) {
       alert('Time entries submitted successfully!');
+      revalidatePath('/');
     } else {
       alert('Error submitting time entries!');
     }

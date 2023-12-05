@@ -138,7 +138,8 @@ const getTimeRangeData = async (
   userId: any,
   projectId: any,
   startDate: any,
-  isAdmin: any
+  isAdmin: any,
+  endDate = null
 ) => {
   let pipeline: any[];
   if (isAdmin) {
@@ -159,10 +160,15 @@ const getTimeRangeData = async (
       groupByUser,
     ];
   }
-
-  pipeline.unshift({
-    $match: { createdAt: { $gte: startDate } },
-  });
+  if (!endDate) {
+    pipeline.unshift({
+      $match: { createdAt: { $gte: startDate } },
+    });
+  } else {
+    pipeline.unshift({
+      $match: { createdAt: { $gte: startDate, $lte: endDate } },
+    });
+  }
 
   return await TimeEntry.aggregate(pipeline);
 };
@@ -204,13 +210,24 @@ const getData = async (
   const user: any = await User.findOne({ email: useremail });
   if (!user) throw new Error('User not found');
   const userId = user._id;
-
-  const weeklyData = await getTimeRangeData(
-    userId,
-    projectId,
-    oneWeekAgo,
-    isAdmin
-  );
+  const dailyData = [];
+  for (let i = 0; i < 7; i += 1) {
+    const day = dayjs().subtract(i, 'day');
+    const dayData = await getTimeRangeData(
+      userId,
+      projectId,
+      day.startOf('day').toDate(),
+      isAdmin,
+      day.endOf('day').toDate()
+    );
+    dailyData.push({ date: day.format('YYYY-MM-DD'), data: dayData });
+  }
+  // const weeklyData = await getTimeRangeData(
+  //   userId,
+  //   projectId,
+  //   oneWeekAgo,
+  //   isAdmin
+  // );
   const monthlyData = await getTimeRangeData(
     userId,
     projectId,
@@ -225,7 +242,7 @@ const getData = async (
     allTimeData = await getUserAllTimeData(userId, projectId);
   }
 
-  return { weeklyData, monthlyData, allTimeData };
+  return { dailyData, monthlyData, allTimeData };
 };
 const formatChartData = (rawData: any, isAdmin: any) => {
   let data;
@@ -251,4 +268,76 @@ const formatChartData = (rawData: any, isAdmin: any) => {
     totalHours: isAdmin ? rawData[0].totalHours : rawData[0].hours,
   };
 };
-export { buildParams, fetchData, toPlainObject, formatChartData, getData };
+interface UserRawData {
+  _id: Types.ObjectId;
+  user: {
+    _id: Types.ObjectId;
+    fullName: string;
+    picture: string;
+    email: string;
+    role: string;
+    assignedProjects: any[];
+    providerAccountId: string;
+    provider: string;
+    createdAt: Date;
+    updatedAt: Date;
+    __v: number;
+  };
+  hours: number;
+}
+
+interface DayData {
+  _id: null | Types.ObjectId;
+  totalHours: number;
+  users: UserRawData[];
+}
+
+interface RawData {
+  date: string;
+  data: DayData[];
+}
+
+interface UserChartData {
+  name: string;
+  hours: number;
+}
+
+interface ChartData {
+  date: string;
+  totalHours: number;
+  userDetails: UserChartData[];
+}
+const formatDailyData = (rawData: RawData[], isAdmin: boolean): ChartData[] => {
+  return rawData.map((day) => {
+    // If there's no data for the day, return an empty structure
+    if (day.data.length === 0) {
+      return { date: day.date, totalHours: 0, userDetails: [] };
+    }
+
+    const dayInfo = day.data[0];
+    const userDetails = isAdmin
+      ? dayInfo.users.map((user) => ({
+          name: user.user.fullName,
+          hours: user.hours,
+        }))
+      : dayInfo.users.map((user) => ({
+          name: user.user.fullName,
+          hours: user.hours,
+        }));
+
+    return {
+      date: day.date,
+      totalHours: dayInfo.totalHours,
+      userDetails,
+    };
+  });
+};
+
+export {
+  buildParams,
+  fetchData,
+  toPlainObject,
+  formatChartData,
+  getData,
+  formatDailyData,
+};
